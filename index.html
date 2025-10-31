@@ -56,6 +56,7 @@
       li {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         border-bottom: 1px solid #eee;
         padding: 6px 0;
         font-size: 15px;
@@ -76,6 +77,25 @@
         margin-top: 15px;
         font-size: 18px;
         font-weight: bold;
+      }
+      .delete-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .delete-btn:hover {
+        background: #b91c1c;
+      }
+      .reset-btn {
+        background: #6b7280;
+        margin-top: 10px;
+      }
+      .reset-btn:hover {
+        background: #4b5563;
       }
     </style>
   </head>
@@ -103,6 +123,8 @@
       <ul id="entries"></ul>
 
       <div class="sum" id="total">Gesamtsumme: 0.00 CHF</div>
+
+      <button id="resetBtn" class="reset-btn">Alles löschen</button>
     </div>
 
     <script>
@@ -113,18 +135,79 @@
       const entriesList = document.getElementById("entries");
       const totalDisplay = document.getElementById("total");
       const addBtn = document.getElementById("addBtn");
+      const resetBtn = document.getElementById("resetBtn");
 
+      // Daten aus LocalStorage laden
       let entries = JSON.parse(localStorage.getItem("entries") || "[]");
+      let savedLimit = localStorage.getItem("limit") || "";
+
+      limitInput.value = savedLimit;
+
+      const saveData = () => {
+        localStorage.setItem("entries", JSON.stringify(entries));
+        localStorage.setItem("limit", limitInput.value);
+      };
 
       const render = () => {
         entriesList.innerHTML = "";
         let total = 0;
-        entries.forEach((entry) => {
+
+        entries.forEach((entry, index) => {
           total += entry.amount;
           const li = document.createElement("li");
-          li.innerHTML = `<span>${entry.category}</span><span>${entry.amount.toFixed(
-            2
-          )} CHF</span>`;
+          li.innerHTML = `
+            <span>${entry.category}</span>
+            <span>${entry.amount.toFixed(2)} CHF</span>
+            <button class="delete-btn" data-index="${index}">✕</button>
+          `;
           entriesList.appendChild(li);
         });
+
         totalDisplay.textContent = `Gesamtsumme: ${total.toFixed(2)} CHF`;
+
+        const limit = parseFloat(limitInput.value);
+        if (!isNaN(limit)) {
+          const remaining = limit - total;
+          limitDisplay.textContent = `Verbleibend: ${remaining.toFixed(2)} CHF`;
+          limitDisplay.className =
+            "limit-info " + (remaining < 0 ? "limit-red" : "limit-green");
+        } else {
+          limitDisplay.textContent = "";
+        }
+
+        saveData();
+      };
+
+      addBtn.onclick = () => {
+        const amount = parseFloat(amountInput.value);
+        const category = categorySelect.value;
+        if (!isNaN(amount) && amount > 0) {
+          entries.push({ amount, category });
+          amountInput.value = "";
+          render();
+        }
+      };
+
+      entriesList.onclick = (e) => {
+        if (e.target.classList.contains("delete-btn")) {
+          const index = e.target.getAttribute("data-index");
+          entries.splice(index, 1);
+          render();
+        }
+      };
+
+      limitInput.oninput = render;
+
+      resetBtn.onclick = () => {
+        if (confirm("Alle Einträge löschen?")) {
+          entries = [];
+          limitInput.value = "";
+          saveData();
+          render();
+        }
+      };
+
+      render();
+    </script>
+  </body>
+</html>
