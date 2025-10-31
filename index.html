@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💰 Ausgaben-Tracker</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f9fafb;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+      .container {
+        width: 100%;
+        max-width: 400px;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        margin-top: 0;
+      }
+      input,
+      select,
+      button {
+        padding: 8px;
+        font-size: 16px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      input,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #1e40af;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      li {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #eee;
+        padding: 6px 0;
+        font-size: 15px;
+      }
+      .limit-info {
+        text-align: center;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      .limit-red {
+        color: #dc2626;
+      }
+      .limit-green {
+        color: #16a34a;
+      }
+      .sum {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>💰 Ausgaben-Tracker</h1>
+
+      <input type="number" id="amount" placeholder="Betrag eingeben" />
+      <br /><br />
+
+      <select id="category">
+        <option value="spass">Spaß</option>
+        <option value="lebensmittel">Lebensmittel</option>
+        <option value="sonstiges">Sonstiges</option>
+      </select>
+      <br /><br />
+
+      <button id="addBtn">Hinzufügen</button>
+      <br /><br />
+
+      <input type="number" id="limit" placeholder="Limit (optional)" />
+      <div id="limitDisplay" class="limit-info"></div>
+
+      <h3>Einträge</h3>
+      <ul id="entries"></ul>
+
+      <div class="sum" id="total">Gesamtsumme: 0.00 CHF</div>
+    </div>
+
+    <script>
+      const amountInput = document.getElementById("amount");
+      const categorySelect = document.getElementById("category");
+      const limitInput = document.getElementById("limit");
+      const limitDisplay = document.getElementById("limitDisplay");
+      const entriesList = document.getElementById("entries");
+      const totalDisplay = document.getElementById("total");
+      const addBtn = document.getElementById("addBtn");
+
+      let entries = JSON.parse(localStorage.getItem("entries") || "[]");
+
+      const render = () => {
+        entriesList.innerHTML = "";
+        let total = 0;
+        entries.forEach((entry) => {
+          total += entry.amount;
+          const li = document.createElement("li");
+          li.innerHTML = `<span>${entry.category}</span><span>${entry.amount.toFixed(
+            2
+          )} CHF</span>`;
+          entriesList.appendChild(li);
+        });
+        totalDisplay.textContent = `Gesamtsumme: ${total.toFixed(2)} CHF`;
